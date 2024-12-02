@@ -58,10 +58,21 @@ public class Main {
                     ViewList();
                     Index = (SafeInput.getInt(in,"Please enter the line number that you would like to move") - 1);
                     Newpos = SafeInput.getRangedInt(in,"Please enter the location you would like to move it to",0,WorkSpace.size() - 1);
+                    MoveInList(Index, Newpos);
                     NeedsToBeSaved = true;
                 }
                 //Open
                 else if (isMatch(Input, "^[Oo]")) {
+                    if(NeedsToBeSaved) {
+                        Boolean Save = SafeInput.getYNConfirm(in,"You have unsaved changes \n Would you like to save the list?");
+                        if(Save) {
+                            File WorkingFile = WorkingPath.toFile();
+                            SaveList(WorkingFile);
+                        }
+                        else {
+                            break;
+                        }
+                    }
                     WorkSpace.clear();
                     WorkingPath = OpenFile();
                     InputStream Reader =
@@ -69,26 +80,34 @@ public class Main {
                     BufferedReader reader =
                             new BufferedReader(new InputStreamReader(Reader));
                     while(reader.ready()){
-                        reader.readLine();
-                        WorkSpace.add(reader.readLine());
+                        String line = reader.readLine();
+                        if(line != null && !line.isEmpty()){
+                        WorkSpace.add(line);
+                        }
                     }
                 }
                 //Save
                 else if (isMatch(Input, "^[Ss]")) {
-
+                   File WorkingFile = WorkingPath.toFile();
+                   SaveList(WorkingFile);
                 }
                 //Clear
                 else if (isMatch(Input, "^[Cc]")) {
-
+                    ClearList();
                 }
                 // Quit
                 else if (isMatch(Input, "^[Qq]")) {
-                    Cont = !SafeInput.getYNConfirm(in, "Are you sure you want to quit? [Y/N]");
-                }
-                if(NeedsToBeSaved){
-                    NeedsToBeSaved = false;
-                    File WorkingFile = WorkingPath.toFile();
-                    SaveList(WorkingFile);
+                    if(NeedsToBeSaved) {
+                        Boolean Save = SafeInput.getYNConfirm(in,"You have unsaved changes \n Would you like to save the list?");
+                        if(Save) {
+                            File WorkingFile = WorkingPath.toFile();
+                            SaveList(WorkingFile);
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    Cont = SafeInput.getYNConfirm(in, "Are you sure you want to quit? [Y/N]");
                 }
             } while (!Cont);
         }catch (Exception e) {
