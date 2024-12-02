@@ -1,7 +1,6 @@
 import java.nio.file.Path;
 import java.util.Scanner;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.io.*;
 import java.util.regex.Matcher;
@@ -17,7 +16,7 @@ public class Main {
         Boolean NeedsToBeSaved = false;
         int Newpos = 0;
         int Index = 0;
-
+        Path WorkingPath = null;
         try {
 
 
@@ -63,9 +62,10 @@ public class Main {
                 }
                 //Open
                 else if (isMatch(Input, "^[Oo]")) {
-                    Path WorkingFile = OpenFile();
+                    WorkSpace.clear();
+                    WorkingPath = OpenFile();
                     InputStream Reader =
-                            new BufferedInputStream(Files.newInputStream(WorkingFile, CREATE));
+                            new BufferedInputStream(Files.newInputStream(WorkingPath, CREATE));
                     BufferedReader reader =
                             new BufferedReader(new InputStreamReader(Reader));
                     while(reader.ready()){
@@ -85,7 +85,11 @@ public class Main {
                 else if (isMatch(Input, "^[Qq]")) {
                     Cont = !SafeInput.getYNConfirm(in, "Are you sure you want to quit? [Y/N]");
                 }
-
+                if(NeedsToBeSaved){
+                    NeedsToBeSaved = false;
+                    File WorkingFile = WorkingPath.toFile();
+                    SaveList(WorkingFile);
+                }
             } while (!Cont);
         }catch (Exception e) {
             System.out.println("File not Found!");
@@ -144,11 +148,10 @@ public class Main {
     }
     //Save
     private static void SaveList(File DataFile) throws IOException {
-        BufferedWriter bw = new BufferedWriter(new FileWriter(DataFile, true));
+        BufferedWriter bw = new BufferedWriter(new FileWriter(DataFile));
         for(int i = 0; i < WorkSpace.size(); i++) {
             bw.write(WorkSpace.get(i));
             bw.newLine();
-
         }
         bw.close();
 
