@@ -23,7 +23,7 @@ public class Main {
             do {
                 String Input = "";
                 System.out.println("Please select an option");
-                System.out.println(" Add \n Delete \n Insert \n View \n Move \n Open \n Save \n Clear \n Quit");
+                System.out.println(" Add  Delete  Insert  View  Move  Open  Save  Clear  Quit");
                 String Addition = "";
                 Input = in.nextLine();
                 int Pos = 0;
@@ -51,27 +51,30 @@ public class Main {
                 //View
                 else if (isMatch(Input, "^[Vv]")) {
                     ViewList();
-                    NeedsToBeSaved = true;
                 }
                 //Move
                 else if (isMatch(Input, "^[Mm]")) {
                     ViewList();
                     Index = (SafeInput.getInt(in,"Please enter the line number that you would like to move") - 1);
-                    Newpos = SafeInput.getRangedInt(in,"Please enter the location you would like to move it to",0,WorkSpace.size() - 1);
+                    Newpos = SafeInput.getRangedInt(in,"Please enter the location you would like to move it to",0,(WorkSpace.size() + 1));
+                    Newpos = Newpos - 1;
                     MoveInList(Index, Newpos);
                     NeedsToBeSaved = true;
                 }
                 //Open
                 else if (isMatch(Input, "^[Oo]")) {
-                    if(NeedsToBeSaved) {
+                    if(NeedsToBeSaved){
                         Boolean Save = SafeInput.getYNConfirm(in,"You have unsaved changes \n Would you like to save the list?");
                         if(Save) {
                             File WorkingFile = WorkingPath.toFile();
                             SaveList(WorkingFile);
+                            NeedsToBeSaved = false;
                         }
                         else {
+                            NeedsToBeSaved = false;
                             break;
                         }
+
                     }
                     WorkSpace.clear();
                     WorkingPath = OpenFile();
@@ -90,20 +93,24 @@ public class Main {
                 else if (isMatch(Input, "^[Ss]")) {
                    File WorkingFile = WorkingPath.toFile();
                    SaveList(WorkingFile);
+                   NeedsToBeSaved = false;
                 }
                 //Clear
                 else if (isMatch(Input, "^[Cc]")) {
                     ClearList();
+                    NeedsToBeSaved = true;
                 }
                 // Quit
                 else if (isMatch(Input, "^[Qq]")) {
                     if(NeedsToBeSaved) {
-                        Boolean Save = SafeInput.getYNConfirm(in,"You have unsaved changes \n Would you like to save the list?");
+                        Boolean Save = SafeInput.getYNConfirm(in,"You have unsaved changes\nWould you like to save the list?");
                         if(Save) {
                             File WorkingFile = WorkingPath.toFile();
                             SaveList(WorkingFile);
+                            NeedsToBeSaved = false;
                         }
                         else {
+                            NeedsToBeSaved = false;
                             break;
                         }
                     }
@@ -112,9 +119,7 @@ public class Main {
             } while (!Cont);
         }catch (Exception e) {
             System.out.println("File not Found!");
-
         }
-
     }
     //Menu Selection
     private static Boolean isMatch(String Input, String regex){
@@ -127,7 +132,6 @@ public class Main {
     //Add to list
     private static void AddToList(String input) {
         WorkSpace.add(input);
-
     }
     //Delete
     private static void DeleteFromList(int pos){
