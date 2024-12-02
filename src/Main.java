@@ -6,21 +6,21 @@ import java.util.ArrayList;
 import java.io.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.JFileChooser;
-
 import static java.nio.file.StandardOpenOption.CREATE;
 
 
 public class Main {
     private static final ArrayList<String> WorkSpace = new ArrayList<>();
-    private static final JFileChooser fc = new JFileChooser();
+    public static final Scanner in = new Scanner(System.in);
     public static void main(String[] args) {
-        Scanner in = new Scanner(System.in);
         Boolean Cont = false;
         Boolean NeedsToBeSaved = false;
-        String WorkingFile = null;
+        int Newpos = 0;
+        int Index = 0;
 
         try {
+
+
             do {
                 String Input = "";
                 System.out.println("Please select an option");
@@ -30,34 +30,42 @@ public class Main {
                 int Pos = 0;
                 // Basic Add
                 if (isMatch(Input, "^[Aa]")) {
-                    String response = "";
-                    SafeInput.getNonZeroLenString(in,"Please enter what you would like to add");
-                    AddToList(response);
+                    Addition = SafeInput.getNonZeroLenString(in,"Please enter what you would like to add");
+                    AddToList(Addition);
+                    NeedsToBeSaved = true;
                 }
                 // Delete
                 else if (isMatch(Input, "^[Dd]")) {
                     ViewList();
+                    Pos = SafeInput.getInt(in,"What would you like to remove?") - 1;
+                    DeleteFromList(Pos);
+                    ViewList();
+                    NeedsToBeSaved = true;
 
                 }
                 //Insert
                 else if (isMatch(Input, "^[Ii]")) {
                     SafeInput.getRangedInt(in,"Please enter the index you would like",0,(WorkSpace.size()-1));
                     SafeInput.getNonZeroLenString(in,"Please enter what you would like to add");
+                    NeedsToBeSaved = true;
                 }
                 //View
                 else if (isMatch(Input, "^[Vv]")) {
                     ViewList();
+                    NeedsToBeSaved = true;
                 }
                 //Move
                 else if (isMatch(Input, "^[Mm]")) {
-
+                    ViewList();
+                    Index = (SafeInput.getInt(in,"Please enter the line number that you would like to move") - 1);
+                    Newpos = SafeInput.getRangedInt(in,"Please enter the location you would like to move it to",0,WorkSpace.size() - 1);
+                    NeedsToBeSaved = true;
                 }
                 //Open
                 else if (isMatch(Input, "^[Oo]")) {
-                    WorkingFile = OpenFile(fc,WorkSpace);
-                    Path WorkingPath = Paths.get(WorkingFile);
+                    Path WorkingFile = OpenFile();
                     InputStream Reader =
-                            new BufferedInputStream(Files.newInputStream(WorkingPath, CREATE));
+                            new BufferedInputStream(Files.newInputStream(WorkingFile, CREATE));
                     BufferedReader reader =
                             new BufferedReader(new InputStreamReader(Reader));
                     while(reader.ready()){
@@ -96,6 +104,11 @@ public class Main {
     //Add to list
     private static void AddToList(String input) {
         WorkSpace.add(input);
+
+    }
+    //Delete
+    private static void DeleteFromList(int pos){
+        WorkSpace.remove(pos);
     }
     //Insert
     private static void listInsert(int Index, String Addition){
@@ -104,24 +117,46 @@ public class Main {
     //View List
     private static void ViewList(){
         for(int i = 0; i < WorkSpace.size(); i++){
-            System.out.println(WorkSpace.get(i));
+            System.out.println( (i + 1 ) + " " + WorkSpace.get(i));
         }
     }
-
+    //Move
+    private static void MoveInList(int Index, int newpos){
+        String MovingItem  = WorkSpace.get(Index);
+        WorkSpace.remove(Index);
+        WorkSpace.add(newpos, MovingItem);
+    }
     //Open File
-    private static String OpenFile(JFileChooser fc,ArrayList<String> WorkSpace) throws IOException {
-        File workingDirectory = new File(System.getProperty("user.dir") + "/src");
-        fc.setCurrentDirectory(workingDirectory);
-        int returnVal = fc.showOpenDialog(null);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = fc.getSelectedFile();
-            System.out.println("The file " + selectedFile.getName() + " is opened!");
-            return selectedFile.getAbsolutePath();
-        }
-        else{
-            throw new FileNotFoundException("File selection cancelled by user");
+    private static Path OpenFile() throws IOException {
+        String FileName = SafeInput.getNonZeroLenString(in, "Please enter the file name");
+        String WorkingDir = System.getProperty("user.dir") + "/src";
+        String FullFileName = WorkingDir + "/" + FileName + ".txt";
+        File DataFile = new File(FullFileName);
+        Path WorkingFile = DataFile.toPath();
+        if (DataFile.createNewFile()) {
+            System.out.println("File created: " + FullFileName);
+            return WorkingFile;
+        } else {
+            System.out.println("File already exists");
+            return WorkingFile;
         }
 
     }
+    //Save
+    private static void SaveList(File DataFile) throws IOException {
+        BufferedWriter bw = new BufferedWriter(new FileWriter(DataFile, true));
+        for(int i = 0; i < WorkSpace.size(); i++) {
+            bw.write(WorkSpace.get(i));
+            bw.newLine();
+
+        }
+        bw.close();
+
+    }
+    //Clear
+    private static void ClearList(){
+        WorkSpace.clear();
+    }
+
 
 }
